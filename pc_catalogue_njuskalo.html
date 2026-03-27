@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PC Components Catalogue — Njuškalo Deal Hunter</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --card:#16161f; --border:#1e1e2e;
+    --accent:#00ff88; --accent2:#ff6b35; --accent3:#7c6cfc;
+    --text:#e8e8f0; --muted:#6b6b80;
+    --cpu:#00d4ff; --gpu:#ff6b35; --ram:#a8ff78; --mb:#c77dff; --ssd:#ffd700; --psu:#ff4d6d;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:linear-gradient(rgba(0,255,136,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.03) 1px,transparent 1px);
+    background-size:40px 40px; }
+  .container { max-width:1500px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+  header { padding:60px 0 40px; border-bottom:1px solid var(--border); margin-bottom:48px; }
+  .badge { display:inline-block; background:rgba(0,255,136,.1); border:1px solid rgba(0,255,136,.3); color:var(--accent); font-family:'Space Mono',monospace; font-size:11px; padding:4px 12px; letter-spacing:2px; text-transform:uppercase; margin-bottom:16px; }
+  h1 { font-size:clamp(36px,5vw,64px); font-weight:800; line-height:1.05; letter-spacing:-2px; margin-bottom:16px; }
+  h1 span { color:var(--accent); }
+  .sub { color:var(--muted); font-size:14px; font-family:'Space Mono',monospace; max-width:760px; line-height:1.8; }
+  .stats { display:flex; gap:32px; flex-wrap:wrap; margin-bottom:48px; padding:20px 24px; background:var(--surface); border:1px solid var(--border); }
+  .stat { display:flex; flex-direction:column; gap:4px; }
+  .sn { font-size:28px; font-weight:800; color:var(--accent); line-height:1; font-family:'Space Mono',monospace; }
+  .sl { font-size:11px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+  .notice { background:rgba(124,108,252,.07); border:1px solid rgba(124,108,252,.25); padding:18px 22px; margin-bottom:32px; font-size:12px; color:var(--muted); font-family:'Space Mono',monospace; line-height:1.9; }
+  .notice strong { color:var(--accent3); }
+  .notice code { background:rgba(0,255,136,.1); color:var(--accent); padding:2px 6px; border-radius:2px; }
+  .progress-bar-wrap { background:var(--surface); border:1px solid var(--border); padding:14px 20px; margin-bottom:32px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .progress-bar-bg { flex:1; min-width:120px; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--accent); border-radius:3px; width:0%; transition:width .3s; }
+  .progress-label { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); white-space:nowrap; }
+  .retry-btn { padding:5px 14px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'Space Mono',monospace; font-size:10px; cursor:pointer; letter-spacing:1px; text-transform:uppercase; display:none; transition:all .2s; }
+  .retry-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+  .retry-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:40px; }
+  .tab { padding:8px 18px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'Space Mono',monospace; font-size:11px; cursor:pointer; transition:all .2s; letter-spacing:1px; text-transform:uppercase; }
+  .tab:hover,.tab.active { border-color:var(--accent); color:var(--accent); background:rgba(0,255,136,.05); }
+  .sec { margin-bottom:64px; }
+  .sec.hidden { display:none; }
+  .sh { display:flex; align-items:center; gap:16px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+  .si { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid; flex-shrink:0; }
+  .st { font-size:20px; font-weight:800; letter-spacing:-.5px; }
+  .sm { margin-left:auto; font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); text-align:right; line-height:1.7; }
+  .cat-cpu .si{border-color:var(--cpu);color:var(--cpu)} .cat-cpu .st{color:var(--cpu)}
+  .cat-gpu .si{border-color:var(--gpu);color:var(--gpu)} .cat-gpu .st{color:var(--gpu)}
+  .cat-ram .si{border-color:var(--ram);color:var(--ram)} .cat-ram .st{color:var(--ram)}
+  .cat-mb  .si{border-color:var(--mb); color:var(--mb)}  .cat-mb  .st{color:var(--mb)}
+  .cat-ssd .si{border-color:var(--ssd);color:var(--ssd)} .cat-ssd .st{color:var(--ssd)}
+  .cat-psu .si{border-color:var(--psu);color:var(--psu)} .cat-psu .st{color:var(--psu)}
+  .tw { overflow-x:auto; border:1px solid var(--border); background:var(--surface); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead tr { background:var(--card); border-bottom:1px solid var(--border); }
+  th { padding:10px 12px; text-align:left; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+  tbody tr { border-bottom:1px solid rgba(30,30,46,.8); transition:background .15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:rgba(255,255,255,.02); }
+  td { padding:10px 12px; vertical-align:middle; white-space:nowrap; }
+  td.nc { white-space:normal; min-width:200px; }
+  .cn { font-weight:600; font-size:13px; display:block; margin-bottom:2px; }
+  .cs { font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; }
+  .rn { color:var(--muted); font-family:'Space Mono',monospace; font-size:11px; }
+  .pn { font-family:'Space Mono',monospace; font-weight:700; font-size:13px; }
+  .pm { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:var(--accent); }
+  .pm-pct { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); display:block; margin-top:2px; }
+  .pm-old { color:var(--accent2) !important; }
+  .d  { display:inline-block; font-family:'Space Mono',monospace; font-size:10px; padding:3px 7px; letter-spacing:.5px; white-space:nowrap; }
+  .hot  { background:rgba(255,107,53,.15); border:1px solid rgba(255,107,53,.4);  color:var(--accent2); }
+  .good { background:rgba(0,255,136,.1);   border:1px solid rgba(0,255,136,.3);   color:var(--accent);  }
+  .ok   { background:rgba(124,108,252,.1); border:1px solid rgba(124,108,252,.3); color:var(--accent3); }
+  .count-badge { display:inline-flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; padding:3px 8px; min-width:32px; white-space:nowrap; cursor:default; }
+  .count-loading { background:rgba(255,255,255,.05); border:1px solid var(--border); color:var(--muted); animation:pulse 1.5s infinite; }
+  .count-ok    { background:rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.35); color:var(--accent); }
+  .count-low   { background:rgba(255,215,0,.1);  border:1px solid rgba(255,215,0,.3);  color:var(--ssd); }
+  .count-none  { background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.25); color:var(--psu); }
+  .count-err   { background:rgba(255,255,255,.04); border:1px solid var(--border); color:var(--muted); font-size:9px; }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  .pct-input { width:50px; font-family:'Space Mono',monospace; font-size:11px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:4px 6px; text-align:center; outline:none; transition:border-color .2s; }
+  .pct-input:focus { border-color:var(--accent3); }
+  .pct-wrap { display:flex; align-items:center; gap:4px; }
+  .pct-sym { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); }
+  .btn  { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:rgba(0,255,136,.08); border:1px solid rgba(0,255,136,.25); color:var(--accent); text-decoration:none; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.6px; text-transform:uppercase; transition:all .2s; white-space:nowrap; }
+  .btn:hover { background:rgba(0,255,136,.18); border-color:var(--accent); }
+  .btn2 { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:rgba(124,108,252,.1); border:1px solid rgba(124,108,252,.3); color:var(--accent3); text-decoration:none; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.6px; text-transform:uppercase; transition:all .2s; white-space:nowrap; }
+  .btn2:hover { background:rgba(124,108,252,.2); border-color:var(--accent3); }
+  footer { border-top:1px solid var(--border); padding:32px 0; margin-top:64px; font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); text-align:center; line-height:2; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="badge">🇭🇷 Njuškalo Deal Hunter v8.0 — iframe Relay</div>
+  <h1>PC Components<br><span>Catalogue</span></h1>
+  <p class="sub">180 components · 30 per category · Live counts fetched automatically via background iframe relay · Works from any origin including local files.</p>
+</header>
+
+<div class="notice">
+  <strong>✅ HOW TO USE:</strong><br>
+  · <code>🔍 Fixed</code> = search at auto-calculated max (30% for ≤2020, 40% for ≥2021)<br>
+  · <code>💜 Custom</code> = edit the % input → link updates live to your custom max price<br>
+  · <strong>Live Count</strong> = active listings on Njuškalo right now — fetched automatically on page load<br>
+  · Click <strong>"SPREMI PRETRAGU I PRIMAJ NOVE OGLASE"</strong> on any opened page to save &amp; get notified<br><br>
+  <strong>HOW COUNTS WORK:</strong> A hidden <code>&lt;iframe srcdoc&gt;</code> relay fetches Njuškalo in the background. Results arrive in ~30–60s for all 180 items.
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="sn">180</span><span class="sl">Components</span></div>
+  <div class="stat"><span class="sn">6</span><span class="sl">Categories</span></div>
+  <div class="stat"><span class="sn" style="color:#00ff88">40%</span><span class="sl">Max (≥2021)</span></div>
+  <div class="stat"><span class="sn" style="color:#ff6b35">30%</span><span class="sl">Max (≤2020)</span></div>
+  <div class="stat"><span class="sn">€10</span><span class="sl">Min Price</span></div>
+  <div class="stat"><span class="sn" id="total-live">…</span><span class="sl">Live Listings</span></div>
+</div>
+
+<div class="progress-bar-wrap" id="progress-wrap">
+  <span class="progress-label" id="progress-label">Starting iframe relay…</span>
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="progress-label" id="progress-pct">0%</span>
+  <button class="retry-btn" id="retry-btn" onclick="retryFailed()">↺ Retry</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="f('all',this)">All (180)</button>
+  <button class="tab" onclick="f('cpu',this)" style="border-color:rgba(0,212,255,.3);color:#00d4ff">CPUs (30)</button>
+  <button class="tab" onclick="f('gpu',this)" style="border-color:rgba(255,107,53,.3);color:#ff6b35">GPUs (30)</button>
+  <button class="tab" onclick="f('ram',this)" style="border-color:rgba(168,255,120,.3);color:#a8ff78">RAM (30)</button>
+  <button class="tab" onclick="f('mb',this)"  style="border-color:rgba(199,125,255,.3);color:#c77dff">Motherboards (30)</button>
+  <button class="tab" onclick="f('ssd',this)" style="border-color:rgba(255,215,0,.3);color:#ffd700">Storage (30)</button>
+  <button class="tab" onclick="f('psu',this)" style="border-color:rgba(255,77,109,.3);color:#ff4d6d">PSUs (30)</button>
+</div>
+
+<div class="sec cat-cpu" data-cat="cpu"><div class="sh"><div class="si">🖥️</div><div><div class="st">CPUs — Procesori</div></div><div class="sm">categoryId=9595 · Intel &amp; AMD · 30 items</div></div><div class="tw"><table><thead><tr><th>#</th><th>Component</th><th>Socket</th><th>New ~€</th><th>Max Price</th><th>Tier</th><th>Fixed Link</th><th>Custom %</th><th>Custom Link</th><th>Live Count</th></tr></thead><tbody id="B_cpu"></tbody></table></div></div>
+<div class="sec cat-gpu" data-cat="gpu"><div class="sh"><div class="si">🎮</div><div><div class="st">GPUs — Grafičke kartice</div></div><div class="sm">categoryId=9602 · Nvidia &amp; AMD · 30 items</div></div><div class="tw"><table><thead><tr><th>#</th><th>Component</th><th>VRAM</th><th>New ~€</th><th>Max Price</th><th>Tier</th><th>Fixed Link</th><th>Custom %</th><th>Custom Link</th><th>Live Count</th></tr></thead><tbody id="B_gpu"></tbody></table></div></div>
+<div class="sec cat-ram" data-cat="ram"><div class="sh"><div class="si">🧠</div><div><div class="st">RAM — Memorije</div></div><div class="sm">categoryId=9596 · DDR4 &amp; DDR5 · 30 items</div></div><div class="tw"><table><thead><tr><th>#</th><th>Component</th><th>Type</th><th>New ~€</th><th>Max Price</th><th>Tier</th><th>Fixed Link</th><th>Custom %</th><th>Custom Link</th><th>Live Count</th></tr></thead><tbody id="B_ram"></tbody></table></div></div>
+<div class="sec cat-mb" data-cat="mb"><div class="sh"><div class="si">🔌</div><div><div class="st">Motherboards — Matične ploče</div></div><div class="sm">categoryId=9598 · Intel &amp; AMD · 30 items</div></div><div class="tw"><table><thead><tr><th>#</th><th>Component</th><th>Socket/Chipset</th><th>New ~€</th><th>Max Price</th><th>Tier</th><th>Fixed Link</th><th>Custom %</th><th>Custom Link</th><th>Live Count</th></tr></thead><tbody id="B_mb"></tbody></table></div></div>
+<div class="sec cat-ssd" data-cat="ssd"><div class="sh"><div class="si">💾</div><div><div class="st">Storage — SSD &amp; HDD</div></div><div class="sm">SSD: 12869 · HDD: 9601 · 30 items</div></div><div class="tw"><table><thead><tr><th>#</th><th>Component</th><th>Interface</th><th>New ~€</th><th>Max Price</th><th>Tier</th><th>Fixed Link</th><th>Custom %</th><th>Custom Link</th><th>Live Count</th></tr></thead><tbody id="B_ssd"></tbody></table></div></div>
+<div class="sec cat-psu" data-cat="psu"><div class="sh"><div class="si">⚡</div><div><div class="st">PSUs — Napajanja</div></div><div class="sm">categoryId=15426 · Gold/Plat/Titan · 30 items</div></div><div class="tw"><table><thead><tr><th>#</th><th>Component</th><th>Wattage</th><th>New ~€</th><th>Max Price</th><th>Tier</th><th>Fixed Link</th><th>Custom %</th><th>Custom Link</th><th>Live Count</th></tr></thead><tbody id="B_psu"></tbody></table></div></div>
+
+<footer>Generated March 2026 · Live counts via srcdoc iframe relay (null origin → njuskalo.hr fetch) · 30% ≤2020, 40% ≥2021 · categoryIds verified</footer>
+</div>
+
+<script>
+const T = { hot:{l:'🔥 HOT',c:'d hot'}, good:{l:'✅ GOOD',c:'d good'}, ok:{l:'💜 VALUE',c:'d ok'} };
+const CID = { cpu:9595, gpu:9602, ram:9596, mb:9598, ssd:12869, hdd:9601, psu:15426 };
+
+const ROWS = {
+  cpu: [
+    ['Intel Core i3-12100F',   '4C/8T · Alder Lake · 2021',        'LGA1700', 105,'hot','cpu','i3-12100F'],
+    ['Intel Core i3-13100F',   '4C/8T · Raptor Lake · 2023',       'LGA1700', 110,'hot','cpu','i3-13100F'],
+    ['Intel Core i5-10400F',   '6C/12T · Comet Lake · 2020',       'LGA1200', 120,'hot','cpu','i5-10400F'],
+    ['Intel Core i5-11400F',   '6C/12T · Rocket Lake · 2021',      'LGA1200', 130,'hot','cpu','i5-11400F'],
+    ['Intel Core i5-12400F',   '6C/12T · Alder Lake · 2022',       'LGA1700', 155,'hot','cpu','i5-12400F'],
+    ['Intel Core i5-12600K',   '10C/16T · Alder Lake · 2021',      'LGA1700', 230,'good','cpu','i5-12600K'],
+    ['Intel Core i5-13400F',   '10C/16T · Raptor Lake · 2023',     'LGA1700', 180,'hot','cpu','i5-13400F'],
+    ['Intel Core i5-13600K',   '14C/20T · Raptor Lake · 2022',     'LGA1700', 270,'good','cpu','i5-13600K'],
+    ['Intel Core i5-14600K',   '14C/20T · Raptor Refresh · 2023',  'LGA1700', 290,'good','cpu','i5-14600K'],
+    ['Intel Core i7-10700K',   '8C/16T · Comet Lake · 2020',       'LGA1200', 200,'hot','cpu','i7-10700K'],
+    ['Intel Core i7-11700K',   '8C/16T · Rocket Lake · 2021',      'LGA1200', 220,'hot','cpu','i7-11700K'],
+    ['Intel Core i7-12700K',   '12C/20T · Alder Lake · 2021',      'LGA1700', 280,'good','cpu','i7-12700K'],
+    ['Intel Core i7-13700K',   '16C/24T · Raptor Lake · 2022',     'LGA1700', 370,'ok','cpu','i7-13700K'],
+    ['Intel Core i7-14700K',   '20C/28T · Raptor Refresh · 2023',  'LGA1700', 400,'ok','cpu','i7-14700K'],
+    ['Intel Core i9-13900K',   '24C/32T · Raptor Lake · 2022',     'LGA1700', 480,'ok','cpu','i9-13900K'],
+    ['AMD Ryzen 5 3600',       '6C/12T · Zen 2 · 2019',            'AM4',     100,'hot','cpu','Ryzen 5 3600'],
+    ['AMD Ryzen 5 5500',       '6C/12T · Zen 3 · 2021',            'AM4',     110,'hot','cpu','Ryzen 5 5500'],
+    ['AMD Ryzen 5 5600',       '6C/12T · Zen 3 · 2021',            'AM4',     130,'hot','cpu','Ryzen 5 5600'],
+    ['AMD Ryzen 5 5600X',      '6C/12T · Zen 3 · 2020',            'AM4',     150,'hot','cpu','Ryzen 5 5600X'],
+    ['AMD Ryzen 5 7600',       '6C/12T · Zen 4 · 2023',            'AM5',     180,'hot','cpu','Ryzen 5 7600'],
+    ['AMD Ryzen 5 7600X',      '6C/12T · Zen 4 · 2022',            'AM5',     200,'hot','cpu','Ryzen 5 7600X'],
+    ['AMD Ryzen 7 5700X',      '8C/16T · Zen 3 · 2022',            'AM4',     160,'hot','cpu','Ryzen 7 5700X'],
+    ['AMD Ryzen 7 5800X',      '8C/16T · Zen 3 · 2020',            'AM4',     200,'hot','cpu','Ryzen 7 5800X'],
+    ['AMD Ryzen 7 5800X3D',    '8C/16T · Zen 3 V-Cache · 2022',   'AM4',     280,'good','cpu','Ryzen 7 5800X3D'],
+    ['AMD Ryzen 7 7700',       '8C/16T · Zen 4 · 2023',            'AM5',     250,'good','cpu','Ryzen 7 7700'],
+    ['AMD Ryzen 7 7700X',      '8C/16T · Zen 4 · 2022',            'AM5',     280,'good','cpu','Ryzen 7 7700X'],
+    ['AMD Ryzen 7 7800X3D',    '8C/16T · Zen 4 V-Cache · 2023',   'AM5',     380,'ok','cpu','Ryzen 7 7800X3D'],
+    ['AMD Ryzen 9 5900X',      '12C/24T · Zen 3 · 2020',           'AM4',     280,'good','cpu','Ryzen 9 5900X'],
+    ['AMD Ryzen 9 5950X',      '16C/32T · Zen 3 · 2020',           'AM4',     380,'ok','cpu','Ryzen 9 5950X'],
+    ['AMD Ryzen 9 7950X',      '16C/32T · Zen 4 · 2022',           'AM5',     550,'ok','cpu','Ryzen 9 7950X'],
+  ],
+  gpu: [
+    ['Nvidia GTX 1060 6GB',     'Pascal · GP106 · 2016',            '6 GB',    250,'hot','gpu','GTX 1060 6GB'],
+    ['Nvidia GTX 1070',         'Pascal · GP104 · 2016',            '8 GB',    380,'hot','gpu','GTX 1070'],
+    ['Nvidia GTX 1070 Ti',      'Pascal · GP104 · 2017',            '8 GB',    450,'hot','gpu','GTX 1070 Ti'],
+    ['Nvidia GTX 1080',         'Pascal · GP104 · 2016',            '8 GB',    550,'hot','gpu','GTX 1080'],
+    ['Nvidia GTX 1080 Ti',      'Pascal · GP102 · 2017',            '11 GB',   700,'hot','gpu','GTX 1080 Ti'],
+    ['Nvidia RTX 2070 Super',   'Turing · TU104 · 2019',            '8 GB',    500,'hot','gpu','RTX 2070 Super'],
+    ['Nvidia RTX 2080 Super',   'Turing · TU104 · 2019',            '8 GB',    700,'hot','gpu','RTX 2080 Super'],
+    ['Nvidia RTX 3050',         'Ampere · GA106 · 2022',            '8 GB',    250,'hot','gpu','RTX 3050'],
+    ['Nvidia RTX 3060',         'Ampere · GA106 · 2021',            '12 GB',   330,'hot','gpu','RTX 3060'],
+    ['Nvidia RTX 3060 Ti',      'Ampere · GA104 · 2020',            '8 GB',    400,'hot','gpu','RTX 3060 Ti'],
+    ['Nvidia RTX 3070',         'Ampere · GA104 · 2020',            '8 GB',    500,'good','gpu','RTX 3070'],
+    ['Nvidia RTX 3070 Ti',      'Ampere · GA104 · 2021',            '8 GB',    600,'good','gpu','RTX 3070 Ti'],
+    ['Nvidia RTX 3080 10GB',    'Ampere · GA102 · 2020',            '10 GB',   700,'ok','gpu','RTX 3080'],
+    ['Nvidia RTX 3080 Ti',      'Ampere · GA102 · 2021',            '12 GB', 1100,'ok','gpu','RTX 3080 Ti'],
+    ['Nvidia RTX 3090',         'Ampere · GA102 · 2020',            '24 GB', 1500,'ok','gpu','RTX 3090'],
+    ['Nvidia RTX 4060',         'Ada Lovelace · AD107 · 2023',      '8 GB',    300,'hot','gpu','RTX 4060'],
+    ['Nvidia RTX 4060 Ti 8GB',  'Ada Lovelace · AD106 · 2023',      '8 GB',    400,'good','gpu','RTX 4060 Ti'],
+    ['Nvidia RTX 4060 Ti 16GB', 'Ada Lovelace · AD106 · 2023',      '16 GB',   450,'good','gpu','RTX 4060 Ti 16GB'],
+    ['Nvidia RTX 4070',         'Ada Lovelace · AD104 · 2023',      '12 GB',   550,'good','gpu','RTX 4070'],
+    ['Nvidia RTX 4070 Super',   'Ada Lovelace · AD104 · 2024',      '12 GB',   600,'ok','gpu','RTX 4070 Super'],
+    ['Nvidia RTX 4070 Ti',      'Ada Lovelace · AD103 · 2023',      '12 GB',   800,'ok','gpu','RTX 4070 Ti'],
+    ['Nvidia RTX 4080 Super',   'Ada Lovelace · AD103 · 2024',      '16 GB', 1050,'ok','gpu','RTX 4080 Super'],
+    ['AMD RX 5700 XT',          'RDNA 1 · Navi 10 · 2019',          '8 GB',    400,'hot','gpu','RX 5700 XT'],
+    ['AMD RX 6600 XT',          'RDNA 2 · Navi 23 · 2021',          '8 GB',    380,'hot','gpu','RX 6600 XT'],
+    ['AMD RX 6700 XT',          'RDNA 2 · Navi 22 · 2021',          '12 GB',   480,'good','gpu','RX 6700 XT'],
+    ['AMD RX 6800',             'RDNA 2 · Navi 21 · 2020',          '16 GB',   580,'ok','gpu','RX 6800'],
+    ['AMD RX 6800 XT',          'RDNA 2 · Navi 21 · 2020',          '16 GB',   650,'ok','gpu','RX 6800 XT'],
+    ['AMD RX 7600',             'RDNA 3 · Navi 33 · 2023',          '8 GB',    270,'hot','gpu','RX 7600'],
+    ['AMD RX 7700 XT',          'RDNA 3 · Navi 32 · 2023',          '12 GB',   400,'good','gpu','RX 7700 XT'],
+    ['AMD RX 7800 XT',          'RDNA 3 · Navi 32 · 2023',          '16 GB',   500,'good','gpu','RX 7800 XT'],
+  ],
+  ram: [
+    ['Corsair Vengeance 8GB DDR4',       '1x8GB · DDR4-3000 · 2018',  'DDR4-3000',  30,'hot','ram','Corsair Vengeance 8GB DDR4'],
+    ['Kingston Fury Beast 16GB DDR4',    '2x8GB · DDR4-3200 · 2020',  'DDR4-3200',  50,'hot','ram','Kingston Fury 16GB DDR4'],
+    ['Corsair Vengeance 16GB DDR4',      '2x8GB · DDR4-3200 · 2019',  'DDR4-3200',  55,'hot','ram','Corsair Vengeance 16GB DDR4'],
+    ['G.Skill Ripjaws V 16GB DDR4',      '2x8GB · DDR4-3600 · 2018',  'DDR4-3600',  55,'hot','ram','G.Skill Ripjaws 16GB DDR4'],
+    ['Crucial 16GB DDR4',                '2x8GB · DDR4-3200 · 2019',  'DDR4-3200',  45,'hot','ram','Crucial 16GB DDR4'],
+    ['Patriot Viper Steel 16GB DDR4',    '2x8GB · DDR4-3600 · 2019',  'DDR4-3600',  55,'hot','ram','Patriot Viper 16GB DDR4'],
+    ['HyperX Fury 16GB DDR4',            '2x8GB · DDR4-3200 · 2018',  'DDR4-3200',  50,'hot','ram','HyperX Fury 16GB DDR4'],
+    ['Kingston Fury Beast 32GB DDR4',    '2x16GB · DDR4-3200 · 2020', 'DDR4-3200',  75,'hot','ram','Kingston Fury 32GB DDR4'],
+    ['Corsair Vengeance 32GB DDR4',      '2x16GB · DDR4-3200 · 2019', 'DDR4-3200',  80,'hot','ram','Corsair Vengeance 32GB DDR4'],
+    ['G.Skill Ripjaws V 32GB DDR4',      '2x16GB · DDR4-3600 · 2018', 'DDR4-3600',  85,'hot','ram','G.Skill Ripjaws 32GB DDR4'],
+    ['Crucial 32GB DDR4',                '2x16GB · DDR4-3600 · 2019', 'DDR4-3600',  85,'hot','ram','Crucial 32GB DDR4'],
+    ['Patriot Viper Steel 32GB DDR4',    '2x16GB · DDR4-3600 · 2019', 'DDR4-3600',  85,'hot','ram','Patriot Viper 32GB DDR4'],
+    ['Teamgroup Vulcan 32GB DDR4',       '2x16GB · DDR4-3600 · 2020', 'DDR4-3600',  80,'hot','ram','Teamgroup 32GB DDR4'],
+    ['G.Skill Trident Z 64GB DDR4',      '2x32GB · DDR4-3600 · 2019', 'DDR4-3600', 170,'good','ram','G.Skill Trident 64GB DDR4'],
+    ['Corsair Vengeance 64GB DDR4',      '2x32GB · DDR4-3200 · 2020', 'DDR4-3200', 160,'good','ram','Corsair Vengeance 64GB DDR4'],
+    ['Kingston Fury 16GB DDR5',          '2x8GB · DDR5-4800 · 2022',  'DDR5-4800',  70,'hot','ram','Kingston Fury 16GB DDR5'],
+    ['Crucial 16GB DDR5',                '2x8GB · DDR5-5200 · 2022',  'DDR5-5200',  75,'hot','ram','Crucial 16GB DDR5'],
+    ['Kingston Fury Beast 32GB DDR5',    '2x16GB · DDR5-5200 · 2022', 'DDR5-5200',  90,'good','ram','Kingston Fury 32GB DDR5'],
+    ['G.Skill Trident Z5 32GB DDR5',     '2x16GB · DDR5-6000 · 2022', 'DDR5-6000', 130,'good','ram','G.Skill Trident Z5 32GB DDR5'],
+    ['Teamgroup Delta RGB 32GB DDR5',    '2x16GB · DDR5-6000 · 2022', 'DDR5-6000', 140,'good','ram','Teamgroup 32GB DDR5'],
+    ['Corsair Vengeance 32GB DDR5',      '2x16GB · DDR5-5600 · 2022', 'DDR5-5600', 135,'good','ram','Corsair Vengeance 32GB DDR5'],
+    ['G.Skill Flare X5 32GB DDR5',       '2x16GB · DDR5-6000 · 2022', 'DDR5-6000', 130,'good','ram','G.Skill Flare X5 32GB DDR5'],
+    ['Crucial Pro 32GB DDR5',            '2x16GB · DDR5-6400 · 2023', 'DDR5-6400', 150,'good','ram','Crucial Pro 32GB DDR5'],
+    ['Kingston Fury Renegade 32GB DDR5', '2x16GB · DDR5-6400 · 2023', 'DDR5-6400', 155,'ok','ram','Kingston Fury Renegade 32GB DDR5'],
+    ['G.Skill Trident Z5 64GB DDR5',     '2x32GB · DDR5-6000 · 2022', 'DDR5-6000', 280,'ok','ram','G.Skill Trident Z5 64GB DDR5'],
+    ['Corsair Dominator 64GB DDR5',      '2x32GB · DDR5-5600 · 2022', 'DDR5-5600', 280,'ok','ram','Corsair Dominator 64GB DDR5'],
+    ['Kingston Fury Beast 64GB DDR5',    '2x32GB · DDR5-5200 · 2023', 'DDR5-5200', 240,'ok','ram','Kingston Fury Beast 64GB DDR5'],
+    ['Crucial 64GB DDR5',                '2x32GB · DDR5-5600 · 2023', 'DDR5-5600', 250,'ok','ram','Crucial 64GB DDR5'],
+    ['Corsair Vengeance RGB 32GB DDR5',  '2x16GB · DDR5-5600 · 2022', 'DDR5-5600', 140,'good','ram','Corsair Vengeance RGB 32GB DDR5'],
+    ['HyperX Fury 32GB DDR4',            '2x16GB · DDR4-3200 · 2019', 'DDR4-3200',  80,'hot','ram','HyperX Fury 32GB DDR4'],
+  ],
+  mb: [
+    ['MSI MAG B460M Mortar',            'mATX · Intel · 2020', 'LGA1200/B460',  120,'hot','mb','MSI B460M Mortar'],
+    ['ASUS Prime B560M-A',              'mATX · Intel · 2021', 'LGA1200/B560',  130,'hot','mb','ASUS B560M-A'],
+    ['Gigabyte B560M DS3H',             'mATX · Intel · 2021', 'LGA1200/B560',  110,'hot','mb','Gigabyte B560M DS3H'],
+    ['MSI MAG B550 Tomahawk',           'ATX · AMD · 2020',    'AM4/B550',      170,'hot','mb','MSI B550 Tomahawk'],
+    ['ASUS ROG Strix B550-F',           'ATX · AMD · 2020',    'AM4/B550',      200,'hot','mb','ASUS ROG B550-F'],
+    ['Gigabyte B550 Aorus Elite',       'ATX · AMD · 2020',    'AM4/B550',      180,'hot','mb','Gigabyte B550 Aorus Elite'],
+    ['ASRock B550 Steel Legend',        'ATX · AMD · 2020',    'AM4/B550',      160,'hot','mb','ASRock B550 Steel Legend'],
+    ['MSI MPG B550 Gaming Edge',        'ATX · AMD · 2020',    'AM4/B550',      190,'hot','mb','MSI B550 Gaming Edge'],
+    ['Gigabyte X570S Aorus Elite',      'ATX · AMD · 2021',    'AM4/X570',      220,'good','mb','Gigabyte X570 Aorus Elite'],
+    ['ASUS ROG Crosshair VIII Hero',    'ATX · AMD · 2020',    'AM4/X570',      280,'good','mb','ASUS ROG Crosshair VIII'],
+    ['MSI MEG X570 Unify',              'ATX · AMD · 2020',    'AM4/X570',      300,'good','mb','MSI MEG X570 Unify'],
+    ['ASUS Prime B760M-A',              'mATX · Intel · 2023', 'LGA1700/B760',  130,'hot','mb','ASUS Prime B760M'],
+    ['Gigabyte B760M DS3H',             'mATX · Intel · 2022', 'LGA1700/B760',  110,'hot','mb','Gigabyte B760M DS3H'],
+    ['MSI PRO B760M-A',                 'mATX · Intel · 2023', 'LGA1700/B760',  120,'hot','mb','MSI PRO B760M'],
+    ['ASUS TUF Gaming B760-Plus',       'ATX · Intel · 2023',  'LGA1700/B760',  170,'hot','mb','ASUS TUF B760'],
+    ['MSI MAG Z690 Tomahawk',           'ATX · Intel · 2021',  'LGA1700/Z690',  220,'good','mb','MSI Z690 Tomahawk'],
+    ['ASUS ROG Strix Z690-F',           'ATX · Intel · 2021',  'LGA1700/Z690',  280,'good','mb','ASUS ROG Z690-F'],
+    ['Gigabyte Z690 Aorus Elite',       'ATX · Intel · 2021',  'LGA1700/Z690',  250,'good','mb','Gigabyte Z690 Aorus Elite'],
+    ['MSI MAG Z790 Tomahawk',           'ATX · Intel · 2022',  'LGA1700/Z790',  280,'good','mb','MSI Z790 Tomahawk'],
+    ['ASUS ROG Strix Z790-E',           'ATX · Intel · 2022',  'LGA1700/Z790',  450,'ok','mb','ASUS ROG Z790-E'],
+    ['ASRock Z790 Pro RS',              'ATX · Intel · 2022',  'LGA1700/Z790',  230,'good','mb','ASRock Z790 Pro RS'],
+    ['ASUS TUF Gaming B650-Plus',       'ATX · AMD · 2022',    'AM5/B650',      200,'good','mb','ASUS TUF B650'],
+    ['MSI MAG B650 Tomahawk',           'ATX · AMD · 2022',    'AM5/B650',      220,'good','mb','MSI B650 Tomahawk'],
+    ['Gigabyte B650 Aorus Elite',       'ATX · AMD · 2022',    'AM5/B650',      210,'good','mb','Gigabyte B650 Aorus Elite'],
+    ['ASRock B650E Pro RS',             'ATX · AMD · 2022',    'AM5/B650E',     250,'good','mb','ASRock B650E Pro RS'],
+    ['MSI MAG X670E Tomahawk',          'ATX · AMD · 2022',    'AM5/X670E',     350,'ok','mb','MSI X670E Tomahawk'],
+    ['ASUS ROG Crosshair X670E Hero',   'ATX · AMD · 2022',    'AM5/X670E',     420,'ok','mb','ASUS ROG Crosshair X670E'],
+    ['Gigabyte X670 Aorus Elite AX',    'ATX · AMD · 2022',    'AM5/X670',      320,'ok','mb','Gigabyte X670 Aorus Elite'],
+    ['ASUS ROG Strix X670E-F',          'ATX · AMD · 2022',    'AM5/X670E',     400,'ok','mb','ASUS ROG X670E-F'],
+    ['MSI MEG X670E Ace',               'ATX · AMD · 2022',    'AM5/X670E',     500,'ok','mb','MSI MEG X670E Ace'],
+  ],
+  ssd: [
+    ['Kingston NV2 500GB',        'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',   45,'hot','ssd','Kingston NV2 500GB'],
+    ['WD Blue SN570 1TB',         'M.2 NVMe Gen3 · 2021',  'NVMe Gen3',   65,'hot','ssd','WD SN570 1TB'],
+    ['Crucial P3 1TB',            'M.2 NVMe Gen3 · 2022',  'NVMe Gen3',   60,'hot','ssd','Crucial P3 1TB'],
+    ['Kingston NV2 1TB',          'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',   70,'hot','ssd','Kingston NV2 1TB'],
+    ['Crucial MX500 1TB',         '2.5" SATA · 2018',      'SATA III',    75,'hot','ssd','Crucial MX500 1TB'],
+    ['Samsung 870 EVO 1TB',       '2.5" SATA · 2021',      'SATA III',    90,'hot','ssd','Samsung 870 EVO 1TB'],
+    ['Samsung 970 EVO Plus 1TB',  'M.2 NVMe Gen3 · 2019',  'NVMe Gen3',  100,'hot','ssd','Samsung 970 EVO Plus'],
+    ['WD Black SN770 1TB',        'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',   90,'hot','ssd','WD SN770 1TB'],
+    ['Crucial P5 Plus 1TB',       'M.2 NVMe Gen4 · 2021',  'NVMe Gen4',  100,'good','ssd','Crucial P5 Plus 1TB'],
+    ['Samsung 980 PRO 1TB',       'M.2 NVMe Gen4 · 2020',  'NVMe Gen4',  130,'good','ssd','Samsung 980 PRO 1TB'],
+    ['WD Black SN850X 1TB',       'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',  120,'good','ssd','WD SN850X 1TB'],
+    ['Samsung 990 PRO 1TB',       'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',  140,'good','ssd','Samsung 990 PRO 1TB'],
+    ['Crucial P5 Plus 2TB',       'M.2 NVMe Gen4 · 2021',  'NVMe Gen4',  150,'good','ssd','Crucial P5 Plus 2TB'],
+    ['WD Black SN850X 2TB',       'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',  200,'ok','ssd','WD SN850X 2TB'],
+    ['Samsung 990 PRO 2TB',       'M.2 NVMe Gen4 · 2022',  'NVMe Gen4',  200,'ok','ssd','Samsung 990 PRO 2TB'],
+    ['Seagate Barracuda 1TB',     '3.5" · 7200 RPM · 2018','SATA HDD',    40,'hot','hdd','Seagate Barracuda 1TB'],
+    ['WD Blue 1TB HDD',           '3.5" · 7200 RPM · 2018','SATA HDD',    40,'hot','hdd','WD Blue 1TB'],
+    ['Seagate Barracuda 2TB',     '3.5" · 7200 RPM · 2018','SATA HDD',    60,'hot','hdd','Seagate Barracuda 2TB'],
+    ['WD Blue 2TB HDD',           '3.5" · 7200 RPM · 2018','SATA HDD',    60,'hot','hdd','WD Blue 2TB'],
+    ['Toshiba P300 2TB',          '3.5" · 7200 RPM · 2019','SATA HDD',    55,'hot','hdd','Toshiba P300 2TB'],
+    ['Seagate Barracuda 4TB',     '3.5" · 5400 RPM · 2019','SATA HDD',    90,'hot','hdd','Seagate Barracuda 4TB'],
+    ['WD Blue 4TB HDD',           '3.5" · 5400 RPM · 2019','SATA HDD',    90,'hot','hdd','WD Blue 4TB'],
+    ['WD Red Plus 4TB NAS',       '3.5" · 5400 RPM · 2020','NAS HDD',    120,'good','hdd','WD Red 4TB'],
+    ['Seagate IronWolf 4TB NAS',  '3.5" · 5900 RPM · 2019','NAS HDD',    115,'good','hdd','Seagate IronWolf 4TB'],
+    ['WD Red Plus 6TB NAS',       '3.5" · 5400 RPM · 2020','NAS HDD',    160,'good','hdd','WD Red 6TB'],
+    ['Seagate IronWolf 6TB NAS',  '3.5" · 5900 RPM · 2019','NAS HDD',    155,'good','hdd','Seagate IronWolf 6TB'],
+    ['WD Red Plus 8TB NAS',       '3.5" · 5640 RPM · 2020','NAS HDD',    200,'ok','hdd','WD Red 8TB'],
+    ['Seagate IronWolf 8TB NAS',  '3.5" · 7200 RPM · 2020','NAS HDD',    200,'ok','hdd','Seagate IronWolf 8TB'],
+    ['Seagate Exos X18 12TB',     '3.5" · 7200 RPM · 2021','Enterprise', 280,'ok','ssd','Seagate Exos 12TB'],
+    ['WD Gold 12TB Enterprise',   '3.5" · 7200 RPM · 2021','Enterprise', 300,'ok','hdd','WD Gold 12TB'],
+  ],
+  psu: [
+    ['be quiet! Pure Power 11 550W',     '80+ Gold · Semi-Mod · 2019',  '550W',   85,'hot','psu','be quiet Pure Power 550W'],
+    ['Corsair CV550',                    '80+ Bronze · Non-Mod · 2020', '550W',   70,'hot','psu','Corsair CV550'],
+    ['Seasonic Focus GX-550',            '80+ Gold · Full-Mod · 2020',  '550W',  100,'hot','psu','Seasonic Focus GX 550W'],
+    ['be quiet! Pure Power 11 FM 650W',  '80+ Gold · Semi-Mod · 2021',  '650W',  100,'hot','psu','be quiet Pure Power 650W'],
+    ['Corsair RM650',                    '80+ Gold · Full-Mod · 2021',  '650W',  100,'hot','psu','Corsair RM650'],
+    ['Corsair RM650x',                   '80+ Gold · Full-Mod · 2021',  '650W',  110,'hot','psu','Corsair RM650x'],
+    ['Seasonic Focus GX-650',            '80+ Gold · Full-Mod · 2020',  '650W',  110,'hot','psu','Seasonic Focus GX 650W'],
+    ['MSI MAG A650GL',                   '80+ Gold · Full-Mod · 2023',  '650W',  100,'hot','psu','MSI MAG A650GL'],
+    ['EVGA SuperNOVA 650 G6',            '80+ Gold · Full-Mod · 2021',  '650W',  105,'hot','psu','EVGA SuperNOVA 650'],
+    ['be quiet! Straight Power 11 650W', '80+ Plat · Full-Mod · 2019',  '650W',  130,'good','psu','be quiet Straight Power 650W'],
+    ['Corsair RM750',                    '80+ Gold · Full-Mod · 2021',  '750W',  120,'hot','psu','Corsair RM750'],
+    ['Corsair RM750x',                   '80+ Gold · Full-Mod · 2021',  '750W',  130,'hot','psu','Corsair RM750x'],
+    ['Seasonic Focus GX-750',            '80+ Gold · Full-Mod · 2020',  '750W',  120,'hot','psu','Seasonic Focus GX 750W'],
+    ['MSI MAG A750GL',                   '80+ Gold · Full-Mod · 2023',  '750W',  110,'hot','psu','MSI MAG A750GL'],
+    ['EVGA SuperNOVA 750 G6',            '80+ Gold · Full-Mod · 2021',  '750W',  115,'hot','psu','EVGA SuperNOVA 750'],
+    ['be quiet! Pure Power 11 FM 750W',  '80+ Gold · Semi-Mod · 2021',  '750W',  115,'hot','psu','be quiet Pure Power 750W'],
+    ['Fractal Design Ion Gold 750W',     '80+ Gold · Full-Mod · 2020',  '750W',  120,'hot','psu','Fractal Design Ion 750W'],
+    ['Corsair RM850',                    '80+ Gold · Full-Mod · 2021',  '850W',  140,'good','psu','Corsair RM850'],
+    ['Corsair RM850x',                   '80+ Gold · Full-Mod · 2021',  '850W',  150,'good','psu','Corsair RM850x'],
+    ['Seasonic Focus GX-850',            '80+ Gold · Full-Mod · 2020',  '850W',  140,'good','psu','Seasonic Focus GX 850W'],
+    ['be quiet! Straight Power 11 850W', '80+ Plat · Full-Mod · 2019',  '850W',  170,'good','psu','be quiet Straight Power 850W'],
+    ['MSI MAG A850GL',                   '80+ Gold · Full-Mod · 2023',  '850W',  130,'good','psu','MSI MAG A850GL'],
+    ['EVGA SuperNOVA 850 G6',            '80+ Gold · Full-Mod · 2021',  '850W',  145,'good','psu','EVGA SuperNOVA 850'],
+    ['be quiet! Dark Power 12 850W',     '80+ Plat · Full-Mod · 2021',  '850W',  200,'ok','psu','be quiet Dark Power 850W'],
+    ['Corsair HX850',                    '80+ Plat · Full-Mod · 2020',  '850W',  190,'ok','psu','Corsair HX850'],
+    ['Seasonic Prime GX-1000',           '80+ Gold · Full-Mod · 2020',  '1000W', 180,'ok','psu','Seasonic Prime GX 1000W'],
+    ['Corsair RM1000x',                  '80+ Gold · Full-Mod · 2021',  '1000W', 190,'ok','psu','Corsair RM1000x'],
+    ['be quiet! Dark Power 12 1000W',    '80+ Plat · Full-Mod · 2021',  '1000W', 230,'ok','psu','be quiet Dark Power 1000W'],
+    ['Corsair HX1000',                   '80+ Plat · Full-Mod · 2021',  '1000W', 200,'ok','psu','Corsair HX1000'],
+    ['Seasonic Prime TX-1000',           '80+ Titan · Full-Mod · 2020', '1000W', 280,'ok','psu','Seasonic Prime TX 1000W'],
+  ]
+};
+
+// ── Build Njuškalo search URL ──────────────────────────────────────────────────
+function buildUrl(kw, catKey, maxPrice) {
+  return 'https://www.njuskalo.hr/search/?keywords=' + encodeURIComponent(kw) +
+    '&categoryId=' + CID[catKey] + '&price%5Bmin%5D=10&price%5Bmax%5D=' + maxPrice;
+}
+function buildPath(kw, catKey, maxPrice) {
+  return '/search/?keywords=' + encodeURIComponent(kw) +
+    '&categoryId=' + CID[catKey] + '&price%5Bmin%5D=10&price%5Bmax%5D=' + maxPrice;
+}
+
+// ── Render rows ────────────────────────────────────────────────────────────────
+const allJobs = []; // { path, countId }
+let gId = 0;
+
+Object.entries(ROWS).forEach(([cat, rows]) => {
+  const tbody = document.getElementById('B_' + cat);
+  if (!tbody) return;
+  rows.forEach((r, i) => {
+    const [name, sub, col3, price, tier, catKey, kw] = r;
+    const ym = sub.match(/·\s*(\d{4})\s*(?:·.*)?$/);
+    const year = ym ? parseInt(ym[1]) : 2021;
+    const defPct = year <= 2020 ? 30 : 40;
+    const fixedMax = Math.round(price * defPct / 100);
+    const fixedUrl = buildUrl(kw, catKey, fixedMax);
+    const t = T[tier];
+    const id = 'r' + (gId++);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="rn">' + (i+1) + '</td>' +
+      '<td class="nc"><span class="cn">' + name + '</span><span class="cs">' + sub + '</span></td>' +
+      '<td><span class="cs">' + col3 + '</span></td>' +
+      '<td class="pn">€' + price + '</td>' +
+      '<td class="pm">€' + fixedMax +
+        '<span class="pm-pct' + (defPct===30?' pm-old':'') + '">' + defPct + '%' + (defPct===30?' (≤2020)':'') + '</span></td>' +
+      '<td><span class="' + t.c + '">' + t.l + '</span></td>' +
+      '<td><a class="btn" href="' + fixedUrl + '" target="_blank">🔍 Fixed</a></td>' +
+      '<td><div class="pct-wrap"><input class="pct-input" id="pi_' + id + '" type="number" min="1" max="100" value="' + defPct + '"><span class="pct-sym">%</span></div></td>' +
+      '<td><a class="btn2" id="cb_' + id + '" href="' + fixedUrl + '" target="_blank">💜 Custom</a></td>' +
+      '<td><span class="count-badge count-loading" id="cnt_' + id + '">…</span></td>';
+    tbody.appendChild(tr);
+
+    // Custom % wiring
+    const pi = tr.querySelector('#pi_' + id);
+    const cb = tr.querySelector('#cb_' + id);
+    pi.addEventListener('input', () => {
+      const pct = Math.max(1, Math.min(100, parseInt(pi.value) || defPct));
+      const cMax = Math.round(price * pct / 100);
+      cb.href = buildUrl(kw, catKey, cMax);
+      cb.title = '€' + cMax + ' (' + pct + '%)';
+    });
+    pi.dispatchEvent(new Event('input'));
+
+    allJobs.push({ path: buildPath(kw, catKey, fixedMax), countId: 'cnt_' + id });
+  });
+});
+
+// ── iframe Relay Fetcher ──────────────────────────────────────────────────────
+// A hidden <iframe srcdoc> fetches Njuškalo as null origin, bypassing CORS.
+// The iframe receives job batches via postMessage and replies with counts.
+
+let iframeReady = false;
+let iframeEl = null;
+const pendingCallbacks = new Map(); // jobId → {resolve, reject, timer}
+let jobCounter = 0;
+let done = 0;
+let totalLive = 0;
+
+const IFRAME_SRC = `<!DOCTYPE html><html><body><script>
+window.addEventListener('message', async function(e) {
+  if (!e.data || e.data.type !== 'fetch') return;
+  const { jobId, path } = e.data;
+  try {
+    const r = await fetch('https://www.njuskalo.hr' + path, { credentials: 'omit' });
+    const text = await r.text();
+    const m = text.match(/class="entities-count">(\\d+)/);
+    parent.postMessage({ type: 'result', jobId, count: m ? parseInt(m[1]) : 0 }, '*');
+  } catch(err) {
+    parent.postMessage({ type: 'result', jobId, count: -1, err: err.message }, '*');
+  }
+});
+parent.postMessage({ type: 'ready' }, '*');
+<\/script></body></html>`;
+
+function createRelay() {
+  return new Promise((resolve) => {
+    iframeEl = document.createElement('iframe');
+    iframeEl.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;visibility:hidden;';
+    iframeEl.srcdoc = IFRAME_SRC;
+    window.addEventListener('message', function readyHandler(e) {
+      if (e.data && e.data.type === 'ready') {
+        window.removeEventListener('message', readyHandler);
+        iframeReady = true;
+        resolve();
+      }
+    });
+    document.body.appendChild(iframeEl);
+  });
+}
+
+// Listen for all results from iframe
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'result') return;
+  const { jobId, count, err } = e.data;
+  const cb = pendingCallbacks.get(jobId);
+  if (!cb) return;
+  clearTimeout(cb.timer);
+  pendingCallbacks.delete(jobId);
+  cb.resolve({ count, err });
+});
+
+function fetchViaRelay(path, timeoutMs = 12000) {
+  return new Promise((resolve) => {
+    const jobId = jobCounter++;
+    const timer = setTimeout(() => {
+      pendingCallbacks.delete(jobId);
+      resolve({ count: -1, err: 'timeout' });
+    }, timeoutMs);
+    pendingCallbacks.set(jobId, { resolve, timer });
+    iframeEl.contentWindow.postMessage({ type: 'fetch', jobId, path }, '*');
+  });
+}
+
+function updateProgress() {
+  const total = allJobs.length;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    done < total ? ('Fetching… ' + done + ' / ' + total) : ('✅ Done — ' + total + ' fetched');
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('total-live').textContent = totalLive;
+  if (done >= total) document.getElementById('retry-btn').style.display = 'inline-block';
+}
+
+async function runJobs(jobs, concurrency = 8, delayMs = 300) {
+  for (let i = 0; i < jobs.length; i += concurrency) {
+    const batch = jobs.slice(i, i + concurrency);
+    await Promise.all(batch.map(async job => {
+      const { count, err } = await fetchViaRelay(job.path);
+      const el = document.getElementById(job.countId);
+      if (el) {
+        if (count < 0) {
+          el.textContent = 'ERR';
+          el.className = 'count-badge count-err';
+          el.title = err || 'failed';
+        } else {
+          el.textContent = count;
+          el.className = 'count-badge ' + (count === 0 ? 'count-none' : count <= 3 ? 'count-low' : 'count-ok');
+          el.title = count + ' listing' + (count !== 1 ? 's' : '');
+          totalLive += count;
+        }
+      }
+      done++;
+      updateProgress();
+    }));
+    if (i + concurrency < jobs.length) {
+      await new Promise(res => setTimeout(res, delayMs));
+    }
+  }
+}
+
+async function retryFailed() {
+  const failed = allJobs.filter(j => {
+    const el = document.getElementById(j.countId);
+    return el && (el.textContent === 'ERR' || el.textContent === '…');
+  });
+  if (!failed.length) return;
+  const btn = document.getElementById('retry-btn');
+  btn.textContent = '↺ ' + failed.length + '…';
+  btn.disabled = true;
+  failed.forEach(j => {
+    const el = document.getElementById(j.countId);
+    if (el) { el.textContent = '…'; el.className = 'count-badge count-loading'; }
+  });
+  done = allJobs.length;
+  await runJobs(failed, 5, 500);
+  btn.textContent = '↺ Retry';
+  btn.disabled = false;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async () => {
+  document.getElementById('progress-label').textContent = 'Starting iframe relay…';
+  updateProgress();
+  try {
+    await createRelay();
+    document.getElementById('progress-label').textContent = 'Relay ready — fetching 180 counts…';
+    await runJobs(allJobs);
+  } catch(e) {
+    document.getElementById('progress-label').textContent = 'Relay failed: ' + e.message;
+  }
+})();
+
+// ── Tab filter ─────────────────────────────────────────────────────────────────
+function f(cat, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.sec').forEach(s => {
+    s.classList.toggle('hidden', cat !== 'all' && s.dataset.cat !== cat);
+  });
+}
+</script>
+</body>
+</html>
